@@ -10,6 +10,7 @@ jobs:
       - run: echo "� The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
+      - run: go mod tidy
       - run: make build-win
       - name: List files in the repository
         run: |
