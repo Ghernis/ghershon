@@ -14,8 +14,13 @@ build:
 
 build-win:
 		GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME).exe $(CMD_PATH)
+rp:
+	cp ghershon ~/bin
+	chmod 744 ~/bin/ghershon
 
 run:
 	./ghershon
+r:
+	go run ./cmd/main.go
 clean:
 	rm -f ghershon
