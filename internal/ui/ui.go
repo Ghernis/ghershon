@@ -3,15 +3,24 @@ package ui
 import (
 	"fmt"
 
-	"os"
+	//"os"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/viewport"
 )
 
-
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+// Styling
+var (
+	titleStyle     = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("69"))
+	docStyle 	   = lipgloss.NewStyle().Margin(5, 2)
+	headerStyle    = lipgloss.NewStyle().Bold(true).Underline(true)
+	sectionTitle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("33"))
+	itemStyle      = lipgloss.NewStyle().PaddingLeft(2)
+	highlightStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+	boxStyle       = lipgloss.NewStyle().Padding(1, 2).Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("60"))//125 pink maybe
+)
 
 type item struct {
 	title, desc string
@@ -21,35 +30,18 @@ func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-type model struct {
+type SnippetModel struct {
 	list list.Model
+	viewport viewport.Model
+	content string
+	ready bool
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+func (m SnippetModel) Init() tea.Cmd {
+	return tea.EnterAltScreen
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
-	}
-
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
-}
-
-func (m model) View() string {
-	return docStyle.Render(m.list.View())
-}
-
-func Load() {
+func (m SnippetModel) InitialModel() SnippetModel{
 	items := []list.Item{
 		item{title: "Raspberry Pi’s", desc: "I have ’em all over my house"},
 		item{title: "Nutella", desc: "It's good on toast"},
@@ -76,13 +68,38 @@ func Load() {
 		item{title: "Terrycloth", desc: "In other words, towel fabric"},
 	}
 
-	m := model{list: list.New(items, list.NewDefaultDelegate(), 0, 0)}
-	m.list.Title = "My Fave Things"
-
-	p := tea.NewProgram(m, tea.WithAltScreen())
-
-	if _, err := p.Run(); err != nil {
-		fmt.Println("Error running program:", err)
-		os.Exit(1)
+	mylist:= list.New(items, list.NewDefaultDelegate(), 0, 0)
+	mylist.Title = "My Fave Things"
+	return SnippetModel{
+		list:mylist,
 	}
+}
+
+func (m SnippetModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "ctrl+c" {
+			return m, tea.Quit
+		}
+	case tea.WindowSizeMsg:
+		h, v := docStyle.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
+	}
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
+}
+
+func (m SnippetModel) View() string {
+	title := titleStyle.Render(" Personal Finance Dashboard (2024)")
+	header := fmt.Sprintf("Hola: %s", "hernan")
+	footer := "Press [← →] to change month · [enter] Chart view · [q] Quit"
+	m=m.InitialModel()
+
+	return lipgloss.JoinVertical(lipgloss.Left,
+		title,
+		docStyle.Render(m.list.View()),
+		headerStyle.Render(header),
+		highlightStyle.Render(footer),
+	)
 }

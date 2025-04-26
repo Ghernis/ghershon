@@ -1,50 +1,47 @@
 package main
 
 import(
-	"fmt"
+	//"fmt"
+	"log"
 	"ghershon/internal/ui"
 	"ghershon/internal/storage"
 	"ghershon/pkg/utils"
-	"log"
 
-	"database/sql"
-	_ "modernc.org/sqlite"
+	"github.com/charmbracelet/bubbletea"
+
+	"github.com/jmoiron/sqlx"
+	//_ "modernc.org/sqlite"
 )
 
 type App struct{
-	db *sql.DB
-	SnippetSrv *sql_l.SnippetService
+	db *sqlx.DB
+	SnippetsSrv *sql_l.SnippetsService
 }
 
 func newApp() *App{
-	// Connect to or create the database
-	db, err := sql.Open("sqlite", "./mydata.db")
-	if err != nil {
-		log.Fatal(err)
-	}
-	//defer db.Close()
+	db:= sql_l.MustNewDB("sqlite","./ghershon.db")
 
-	// Test the connection
 	if err := db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Println("Connected to SQLite!")
-	//snippetService := NewSnippetService(db)
-	//fmt.Println("Created service")
 	return &App{
 		db: db,
-		SnippetSrv: sql_l.NewSnippetService(db),
+		SnippetsSrv: sql_l.NewSnippetsService(db),
 	}
 }
 func main(){
-	fmt.Println("hello")
-	ui.Load()
+	//ui.Load()
 	//sql.Load()
 	utils.Load()
 
 	app := newApp()
 	defer app.db.Close()
-	app.SnippetSrv.GetData()
-	utils.DoSomething(app.SnippetSrv)
+	app.SnippetsSrv.GetData()
+	utils.DoSomething(app.SnippetsSrv)
+	p := tea.NewProgram(ui.RootModel{})
+	if err := p.Start(); err != nil{
+		panic(err)
+	}
+
 
 }

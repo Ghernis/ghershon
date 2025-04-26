@@ -12,9 +12,9 @@ func loadConfigs(){
 	fmt.Println("loadConfig yml")
 
 }
-func DoSomething(snippetSrv *sql_l.SnippetService){
+func DoSomething(snippetsSrv *sql_l.SnippetsService){
 	log.Println("Something in db with utils")
-	snippetSrv.GetData()
+	snippetsSrv.GetData()
 
 }
 

@@ -1,99 +1,146 @@
 package sql_l
 
+//bd: snippets
+
 import (
-	"database/sql"
+	"html/template"
+	"time"
+	"bytes"
+	//"database/sql"
 	"fmt"
 	"log"
-
-	//_ "modernc.org/sqlite"
+	"github.com/jmoiron/sqlx"
+	_ "modernc.org/sqlite"
 )
 
-// Service struct that depends on the database
-type SnippetService struct {
-	db *sql.DB
-}
-// Constructor function
-func NewSnippetService(db *sql.DB) *SnippetService {
-	return &SnippetService{db: db}
+func NewDB(driver, dsn string) (*sqlx.DB, error) {
+    db, err := sqlx.Connect(driver, dsn)
+    if err != nil {
+        return nil, err
+    }
+    return db, nil
 }
 
-//func initDb() *SnippetService{
-//	// Connect to or create the database
-//	db, err := sql.Open("sqlite", "./mydata.db")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	defer db.Close()
-//
-//	// Test the connection
-//	if err := db.Ping(); err != nil {
-//		log.Fatal(err)
-//	}
-//	fmt.Println("Connected to SQLite!")
-//	snippetService := NewSnippetService(db)
-//	fmt.Println("Created service")
-//	return snippetService
-//}
-func (s *SnippetService) GetData(){
+func MustNewDB(driver, dsn string) *sqlx.DB {
+    db, err := NewDB(driver, dsn)
+    if err != nil {
+        log.Fatal(err)
+    }
+    return db
+}
+
+type SnippetsService struct {
+	db *sqlx.DB
+}
+
+func NewSnippetsService(db *sqlx.DB) *SnippetsService {
+	return &SnippetsService{db: db}
+}
+
+type Project struct {
+	ID                    int64     `db:"id"`
+	Title                 string    `db:"title"`
+	Description           string    `db:"description"`
+	ProblemStatement      string    `db:"problem_statement"`
+	Architecture          string    `db:"architecture"`
+	Evidence              string    `db:"evidence"`
+	ExpectedFinishDate    string    `db:"expected_finish_date"`
+	CompletedAt           *string   `db:"completed_at"`
+	TimeBeforeAutomation  int       `db:"time_before_automation"`
+	TimeAfterAutomation   int       `db:"time_after_automation"`
+	Tags                  string    `db:"tags"`
+	CreatedAt             time.Time `db:"created_at"`
+}
+
+type ProjectTask struct {
+	ID         int64     `db:"id"`
+	ProjectID  int64     `db:"project_id"`
+	Content    string    `db:"content"`
+	IsDone     bool      `db:"is_done"`
+	CreatedAt  time.Time `db:"created_at"`
+	DueDate    *string   `db:"due_date"`
+}
+
+type Snippet struct {
+	ID             int64     `db:"id"`
+	Title          string    `db:"title"`               // Short label
+	Description    string    `db:"description"`         // What it does or why it's useful
+	Language       string    `db:"language"`            // "yaml", "go", "bash", etc.
+	Tags           string    `db:"tags"`                // CSV or JSON encoded slice
+	Content        string    `db:"content"`             // Actual snippet text
+	SourceFile     string    `db:"source_file"`         // Optional: file path
+	StartLine      int       `db:"start_line"`          // Optional: for reference only
+	EndLine        int       `db:"end_line"`            // Optional: for reference only
+	Documentation  string    `db:"documentation_url"`   // Optional: official links
+	ProjectUsedIn  string    `db:"project_used_in"`     // For traceability
+	//CreatedAt      time.Time `db:"created_at"`
+	CreatedAt      string `db:"created_at"`
+	ProjectID  int64     `db:"project_id"`
+}
+
+func (s *SnippetsService) FindData2(search_string string) []Snippet{
+	type search_query struct{
+		Search string
+	}
+	
 	getData := `
-	select * from snippets;`
-	data, err := s.db.Query(getData)
+	select * from snippets where description like '%{{ .Search }}%';
+	`
+	t := template.Must(template.New("test").Parse(getData))
+	query := new(bytes.Buffer)
+	t.Execute(query,search_query{search_string})
+	var data []Snippet
+	fmt.Println(query.String())
+	err := s.db.Select(&data,query.String())
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
-	//defer data.Close()
-
-	for data.Next(){
-		var (
-			id int64
-			title string
-			description string
-			code string
-			tags string
-			reference string
-		)
-		if err := data.Scan(&id,&title,&description,&code,&tags,&reference); err != nil{
-			log.Fatal(err)
-			fmt.Println(err)
-		}
-		log.Printf("ID: %d, Title: %s, Description: %s,%s,%s,%s\n", id, title, description,code,tags,reference)
-		//fmt.Println(id,title,description,code,tags,reference)
-	}
-
+	return data
 }
 
-//func Load() {
+func (s *SnippetsService) FindData(search_string string) []Snippet{
+	
+	getData := fmt.Sprintf(`
+	select * from snippets where description like '%%%s%%';
+	`,search_string)
+	var data []Snippet
+	fmt.Println(getData)
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data
+}
 
-	//ss := initDb()
-
-	//ss.getData()
-
-	// Create a sample table
-	//createTableSQL := `
-	//CREATE TABLE IF NOT EXISTS snippets (
-	//	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	//	title TEXT NOT NULL,
-	//	description TEXT,
-	//	code TEXT,
-	//	tags TEXT,
-	//	reference TEXT)
-	//	`
-
-	//_, err = db.Exec(createTableSQL)
-	//if err != nil {
-	//	log.Fatalf("Error creating table: %s", err)
-	//}
-	//fmt.Println(res)
-
-	//fmt.Println("Table created successfully!")
-
-	//putData := `
-	//	INSERT INTO snippets (title, description, code, tags,reference)
-	//	VALUES ('titulo','description','code','tags','ref');
-	//`
-	//_,err = db.Exec(putData)
-	//if err != nil{
-	//	log.Fatal("Insert Error:",err)
-	//}
-	//}
+//type Sums struct{
+//	Mes string `db:"mes"`
+//	Year string `db:"year"`
+//	Tot float64 `db:"Tot"`
+//	Card string `db:"card"`
+//
+//}	
+//func (s *SnippetsService) GetMonthlyExpenses() []Sums{
+//	
+//	getData := fmt.Sprintf(`
+//	select year,Mes,SUM(pesos) as Tot,card from snippets group by mes,year,card;
+//	`)
+//	var data []Sums
+//	err := s.db.Select(&data,getData)
+//	if err != nil {
+//		log.Fatal("Error in query: ",err)
+//	}
+//	fmt.Println(data)
+//	return data
 //}
+
+func (s *SnippetsService) GetData() ([]Snippet,error){
+	getData := `
+	select * from snippets;   
+	`
+	var data []Snippet
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data,err
+}
