@@ -1,10 +1,11 @@
 package main
 
 import(
-	//"fmt"
+	"fmt"
 	"log"
 	"ghershon/internal/ui"
 	"ghershon/internal/storage"
+	"ghershon/internal/projects"
 	"ghershon/pkg/utils"
 
 	"github.com/charmbracelet/bubbletea"
@@ -32,7 +33,8 @@ func newApp() *App{
 func main(){
 	//ui.Load()
 	//sql.Load()
-	utils.Load()
+	config:=utils.Load()
+	fmt.Println(config.Bootstrap.Dir_path)
 
 	app := newApp()
 	defer app.db.Close()
@@ -42,6 +44,8 @@ func main(){
 	if err := p.Start(); err != nil{
 		panic(err)
 	}
+	bootstrap.Python_boot(config.Bootstrap.Dir_path,"test2")
+	//bootstrap.Python_boot("test1")
 
 
 }
