@@ -67,10 +67,12 @@ func Django_boot(basepath string,name string){
 
     // 2. Create a Python venv
     pyCmd := "python"
+	pipCmd := "pip"
 	venvActivatePath:= "bin"
     if runtime.GOOS == "windows" {
-        pyCmd = "python" // typically installed as python.exe
-		venvActivatePath = "Scritps"
+        pyCmd = "python.exe" // typically installed as python.exe
+        pipCmd = "pip.exe" // typically installed as python.exe
+		venvActivatePath = "Scripts"
     }
 	djangoPath := filepath.Join(target,"app")
     venvPath := filepath.Join(djangoPath, "venv")
@@ -85,8 +87,8 @@ func Django_boot(basepath string,name string){
     }
     fmt.Println("✅ Python venv ready at", venvPath)
 	// 3. Install python libs
-	pythonVenv := filepath.Join(venvPath,venvActivatePath,"python")
-	pipVenv := filepath.Join(venvPath,venvActivatePath,"pip")
+	pythonVenv := filepath.Join(venvPath,venvActivatePath,pyCmd)
+	pipVenv := filepath.Join(venvPath,venvActivatePath,pipCmd)
 	fmt.Println(pythonVenv)
 
 	cmd2 := exec.Command(pipVenv,"install","django","gunicorn")
@@ -278,10 +280,12 @@ func Python_boot(basepath string,name string) {
 
     // 2. Create a Python venv
     pyCmd := "python"
+    pipCmd := "pip"
 	venvActivatePath:= "bin"
     if runtime.GOOS == "windows" {
-        pyCmd = "python" // typically installed as python.exe
-		venvActivatePath = "Scritps"
+        pyCmd = "python.exe" // typically installed as python.exe
+        pipCmd = "pip.exe" // typically installed as python.exe
+		venvActivatePath = "Scripts"
     }
     venvPath := filepath.Join(target, "venv")
     cmd := exec.Command(pyCmd, "-m", "venv", venvPath)
@@ -295,8 +299,8 @@ func Python_boot(basepath string,name string) {
     }
     fmt.Println("✅ Python venv ready at", venvPath)
 
-	pythonPath := filepath.Join(target, "venv", venvActivatePath, "python")
-	pipPath := filepath.Join(target, "venv", venvActivatePath, "pip")
+	pythonPath := filepath.Join(target, "venv", venvActivatePath, pyCmd)
+	pipPath := filepath.Join(target, "venv", venvActivatePath, pipCmd)
 	fmt.Println(pythonPath)
 	cmd3 := exec.Command(pipPath,"list")
 	//cmd3.Dir=target
