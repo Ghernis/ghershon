@@ -19,8 +19,8 @@ jobs:
         go-version: '1.22'
     - name: Build binaries
       run: |
-        GOOS=linux GOARCH=amd64 go build -o ghershon
-        GOOS=windows GOARCH=amd64 go build -o ghershon.exe
+        GOOS=linux GOARCH=amd64 go build -o ghershon ./cmd/
+        GOOS=windows GOARCH=amd64 go build -o ghershon.exe ./cmd/
 
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v2
