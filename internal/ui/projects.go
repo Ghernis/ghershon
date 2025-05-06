@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
     "ghershon/internal/ui/styles"
+	"ghershon/internal/ui/toast"
 	"ghershon/internal/projects"
 	"ghershon/pkg/utils"
 )
@@ -33,6 +34,7 @@ type BootstrapModel struct {
 	focusIndex int
 	projectType string
 	quitting    bool
+	toast toast.ToastModel
 }
 
 func NewBootstrapModel() BootstrapModel {
@@ -78,6 +80,7 @@ func NewBootstrapModel() BootstrapModel {
 		inputs:      inputs,
 		focusIndex:  0,
 		projectType: "Python Script", // Fake dropdown, static for now
+		toast: toast.NewToastModel(),
 	}
 }
 
@@ -121,7 +124,8 @@ func (m BootstrapModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					config:=utils.Load()
 					bootstrap.Django_boot(config.Bootstrap.Dir_path,name)
 				}
-				return m, tea.Quit
+				//m.toast.Show("✅ Snippet saved!", styles.SuccessStyle)
+				return m, tea.Quit //quit?
 			}
 			// Move focus to next
 			m.focusIndex++
@@ -143,6 +147,7 @@ func (m BootstrapModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		// Optional: handle resizing
 	}
+	m.toast,_ = m.toast.Update(msg)
 
 	// Forward to correct component
 	if m.focusIndex == 0 {
@@ -210,6 +215,9 @@ func (m BootstrapModel) View() string {
 
 	for _, input := range m.inputs {
 		fmt.Fprintf(&b, "│ %s\n", input.View())
+	}
+	if toastMsg :=m.toast.View(); toastMsg != ""{
+		fmt.Fprintf(&b, "| %s\n",toastMsg)
 	}
 
 	fmt.Fprintln(&b, "│")

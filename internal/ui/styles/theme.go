@@ -22,6 +22,10 @@ var (
         Bold(true).
         MarginBottom(1)
 
+	SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
+	ErrorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("196"))
+	InfoStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("33"))
+
 	FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	NoStyle      = lipgloss.NewStyle() 
 )
