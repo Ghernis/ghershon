@@ -12,6 +12,9 @@ type DashboardModel struct{}
 func (m DashboardModel) Init() tea.Cmd {
     return tea.EnterAltScreen
 }
+func NewDashboardModel() DashboardModel{
+	return DashboardModel{}
+}
 
 func (m DashboardModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     return m, nil

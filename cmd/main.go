@@ -40,7 +40,7 @@ func main(){
 	defer app.db.Close()
 	app.SnippetsSrv.GetData()
 	utils.DoSomething(app.SnippetsSrv)
-	p := tea.NewProgram(ui.RootModel{})
+	p := tea.NewProgram(ui.NewRootModel())
 	if err := p.Start(); err != nil{
 		panic(err)
 	}

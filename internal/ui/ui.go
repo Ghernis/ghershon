@@ -42,7 +42,7 @@ func (m SnippetModel) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
 
-func (m SnippetModel) InitialModel() SnippetModel{
+func NewSnippetModel() SnippetModel{
 	items := []list.Item{
 		item{title: "Raspberry Pi’s", desc: "I have ’em all over my house"},
 		item{title: "Nutella", desc: "It's good on toast"},
@@ -101,7 +101,7 @@ func (m SnippetModel) View() string {
 	title := titleStyle.Render(" Personal Finance Dashboard (2024)")
 	header := fmt.Sprintf("Hola: %s", "hernan")
 	footer := "Press [← →] to change month · [enter] Chart view · [q] Quit"
-	m=m.InitialModel()
+	//m=m.InitialModel()
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		title,
