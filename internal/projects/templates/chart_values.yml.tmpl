@@ -1,0 +1,12 @@
+replicaCount: 1
+
+image:
+  repository: your.registry/{{ .ServiceName }}
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources: {}

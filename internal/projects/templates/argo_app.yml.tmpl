@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: <service_name>
+  namespace: argo-namespace
+spec:
+  project: default
+  source:
+    repoURL: 'https://your-git-server/your-cd-repo.git'
+    targetRevision: HEAD
+    path: <service_name>/cd/<service_name>
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: <target-namespace>
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

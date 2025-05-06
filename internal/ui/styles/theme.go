@@ -21,4 +21,7 @@ var (
         Foreground(lipgloss.Color("#bb9af7")).
         Bold(true).
         MarginBottom(1)
+
+	FocusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	NoStyle      = lipgloss.NewStyle() 
 )

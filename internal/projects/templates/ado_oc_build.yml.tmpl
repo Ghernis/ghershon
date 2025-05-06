@@ -1,0 +1,21 @@
+trigger: none
+pool: pool-gherno
+
+
+stages:
+- stage: Build
+  displayName: Build stage OC
+  jobs:
+  - job: OC Build
+    displayName: Build
+    steps:
+	- task: Bash@3
+        inputs:
+          targetType: 'inline'
+          script: |
+			oc login -u kubadmin -p  $(OC-PASSWORD)
+			oc project django-test 
+			oc start-build $(DJANGO-BUILDCONFIG-NAME) --wait --follow
+			oc get build -l buildconfig=$(DJANGO-BUILDCONFIG-NAME) -o json > build-info.json
+	- publish: build-info.json
+	  artifact: buildMetadata

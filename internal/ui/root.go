@@ -16,6 +16,7 @@ type RootModel struct {
     current Screen
     dash    DashboardModel
 	snippets SnippetModel
+	bootstrap BootstrapModel
 }
 
 func (m RootModel) Init() tea.Cmd {
@@ -45,6 +46,8 @@ func (m RootModel) View() string {
         return m.dash.View()
     case Snippets:
         return m.snippets.View()
+    case Bootstrap:
+        return m.bootstrap.View()
 
     default:
         return "Unknown screen"

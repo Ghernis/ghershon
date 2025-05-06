@@ -9,9 +9,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/viewport"
+    "ghershon/internal/ui/styles"
 )
 
-// Styling
+// Styling TODO: to ui/styles
 var (
 	titleStyle     = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("69"))
 	docStyle 	   = lipgloss.NewStyle().Margin(5, 2)
@@ -68,7 +69,7 @@ func (m SnippetModel) InitialModel() SnippetModel{
 		item{title: "Terrycloth", desc: "In other words, towel fabric"},
 	}
 
-	mylist:= list.New(items, list.NewDefaultDelegate(), 0, 0)
+	mylist:= list.New(items, list.NewDefaultDelegate(), 50, 50)
 	mylist.Title = "My Fave Things"
 	return SnippetModel{
 		list:mylist,
@@ -91,6 +92,12 @@ func (m SnippetModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m SnippetModel) View() string {
+    tabs := lipgloss.JoinHorizontal(lipgloss.Top,
+        styles.ActiveTab.Render("Dashboard"),
+        styles.TabStyle.Render("Snippets"),
+        styles.TabStyle.Render("Projects"),
+    )
+
 	title := titleStyle.Render(" Personal Finance Dashboard (2024)")
 	header := fmt.Sprintf("Hola: %s", "hernan")
 	footer := "Press [← →] to change month · [enter] Chart view · [q] Quit"
@@ -98,6 +105,7 @@ func (m SnippetModel) View() string {
 
 	return lipgloss.JoinVertical(lipgloss.Left,
 		title,
+		tabs,
 		docStyle.Render(m.list.View()),
 		headerStyle.Render(header),
 		highlightStyle.Render(footer),

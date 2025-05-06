@@ -1,0 +1,64 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: {{ .ProjectName }}
+  labels:
+    app: django-microservice
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: django-microservice:latest
+  source:
+    type: Git
+    git:
+      uri: https://github.com/your-username/your-django-microservice.git
+      ref: main
+    contextDir: .
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python:3.11 # or whichever version you want
+        namespace: openshift
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  triggers:
+    - type: ConfigChange
+    - type: GitHub
+      github:
+        secret: your-webhook-secret
+  runPolicy: Serial
+
+## testin
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: my-django-build
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      namespace: django-test
+      name: django-test-stream:latest
+  source:
+    type: Git
+    git:
+      uri: 'git@ssh.dev.azure.com:v3/hernanegomez/gherno-proyect/django-build-test'
+      ref: master
+    contextDir: .
+    sourceSecret:
+      name: ado-token
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'python:3.11-ubi9'

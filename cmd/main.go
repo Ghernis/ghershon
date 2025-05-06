@@ -5,7 +5,7 @@ import(
 	"log"
 	"ghershon/internal/ui"
 	"ghershon/internal/storage"
-	"ghershon/internal/projects"
+	//"ghershon/internal/projects"
 	"ghershon/pkg/utils"
 
 	"github.com/charmbracelet/bubbletea"
@@ -44,8 +44,8 @@ func main(){
 	if err := p.Start(); err != nil{
 		panic(err)
 	}
-	bootstrap.Python_boot(config.Bootstrap.Dir_path,"test2")
-	//bootstrap.Python_boot("test1")
+	//bootstrap.Django_boot(config.Bootstrap.Dir_path,"test3")
+	//bootstrap.Python_boot(config.Bootstrap.Dir_path,"test2")
 
 
 }
