@@ -3,5 +3,5 @@
 *.exe
 ghershon
 mydata.db
-#ghershon.db
+ghershon.db
 debug.log

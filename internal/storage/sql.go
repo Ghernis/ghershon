@@ -37,6 +37,7 @@ func NewSnippetsService(db *sqlx.DB) *SnippetsService {
 	return &SnippetsService{db: db}
 }
 
+
 type Project struct {
 	ID                    int64     `db:"id"`
 	Title                 string    `db:"title"`
@@ -77,6 +78,15 @@ type Snippet struct {
 	CreatedAt      string `db:"created_at"`
 	ProjectID  int64     `db:"project_id"`
 }
+type Secret struct {
+	Id int64 `db:"id"`
+	Name string `db:"name"`
+	Description string `db:"description"`
+	Secret_type string `db:"secret_type"`
+	Encoded_value string `db:"encoded_value"`
+	//Created_at time.Time `db:"created_at"`
+	Created_at string `db:"created_at"`
+}
 
 func (s *SnippetsService) FindData2(search_string string) []Snippet{
 	type search_query struct{
@@ -110,6 +120,47 @@ func (s *SnippetsService) FindData(search_string string) []Snippet{
 		log.Fatal("Error in query: ",err)
 	}
 	return data
+}
+func (s *SnippetsService) FindSecret(search_id int64) []Secret{
+	//fmt.Println(search_string)
+	getData := fmt.Sprintf(`
+		select * from secrets where  id == %v;
+	`,search_id)
+	var data []Secret
+	fmt.Println(getData)
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data
+}
+func (s *SnippetsService) FindAllSecret()[]Secret{
+	//fmt.Println(search_string)
+	getData := fmt.Sprintf(`
+		select * from secrets;
+	`)
+	var data []Secret
+	fmt.Println(getData)
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data
+}
+
+func (s *SnippetsService) AddSecret(sec Secret) error{
+	//fmt.Println(search_string)
+	query := fmt.Sprintf(`
+        INSERT INTO secrets (name, description, secret_type, encoded_value)
+		VALUES (:name,:description, :secret_type,  :encoded_value)
+		`)
+
+	_,err := s.db.NamedExec(query,sec)
+	
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return err
 }
 
 //type Sums struct{

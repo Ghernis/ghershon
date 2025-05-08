@@ -38,7 +38,18 @@ func main(){
 
 	app := newApp()
 	defer app.db.Close()
-	app.SnippetsSrv.GetData()
+	//app.SnippetsSrv.GetData()
+	secrets:=app.SnippetsSrv.FindAllSecret()
+	fmt.Println(secrets)
+	//err:=app.SnippetsSrv.AddSecret(sql_l.Secret{
+	//	Name:"hola",
+	//	Description:"hola",
+	//	Secret_type:"hola",
+	//	Encoded_value:"hola",
+	//})
+	//if err != nil{
+	//	fmt.Println(err)
+	//}
 	utils.DoSomething(app.SnippetsSrv)
 	p := tea.NewProgram(ui.NewRootModel())
 	if err := p.Start(); err != nil{
