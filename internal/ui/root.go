@@ -2,6 +2,7 @@ package ui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"ghershon/internal/storage"
 )
 
 type Screen int
@@ -10,6 +11,7 @@ const (
     Dashboard Screen = iota
     Snippets
     Bootstrap
+    Secret
 )
 
 type RootModel struct {
@@ -17,6 +19,7 @@ type RootModel struct {
     dash    DashboardModel
 	snippets SnippetModel
 	bootstrap BootstrapModel
+	secret SecretModel
 }
 
 func (m RootModel) Init() tea.Cmd {
@@ -41,6 +44,9 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         case "3":
             m.current = Bootstrap
 			return m,m.bootstrap.Init()
+        case "4":
+            m.current = Secret
+			return m,m.secret.Init()
         }
     }
 	var cmd tea.Cmd
@@ -63,15 +69,22 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			updated, c=m.bootstrap.Update(msg)
 			m.bootstrap = updated.(BootstrapModel)
 			cmd=c
+		case Secret:
+			var c tea.Cmd
+			var updated tea.Model
+			updated, c=m.secret.Update(msg)
+			m.secret = updated.(SecretModel)
+			cmd=c
 	}
     return m, cmd
 }
-func NewRootModel() RootModel{
+func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
 	return RootModel{
 		current: Dashboard,
 		dash: NewDashboardModel(),
 		snippets: NewSnippetModel(),
 		bootstrap: NewBootstrapModel(),
+		secret: NewSecretModel(db_service),
 	}	
 }
 
@@ -83,6 +96,8 @@ func (m RootModel) View() string {
         return m.snippets.View()
     case Bootstrap:
         return m.bootstrap.View()
+    case Secret:
+        return m.secret.View()
 
     default:
         return "Unknown screen"

@@ -25,6 +25,8 @@ func (m DashboardModel) View() string {
         styles.ActiveTab.Render("Dashboard"),
         styles.TabStyle.Render("Snippets"),
         styles.TabStyle.Render("Projects"),
+        styles.TabStyle.Render("Secrets"),
+        styles.TabStyle.Render("Tickets"),
     )
 
     //logo := styles.LogoStyle.Render("Gher ░▒▓█")

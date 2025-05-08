@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/viewport"
     "ghershon/internal/ui/styles"
+	//"ghershon/internal/storage"
 )
 
 // Styling TODO: to ui/styles
@@ -41,6 +42,10 @@ type SnippetModel struct {
 func (m SnippetModel) Init() tea.Cmd {
 	return tea.EnterAltScreen
 }
+//func loadData(snippetsSrv *sql_l.SnippetsService) []sql_l.Secret{
+	//secrets:=app.SnippetsSrv.FindAllSecret()
+//	return secrets
+//}
 
 func NewSnippetModel() SnippetModel{
 	items := []list.Item{
@@ -68,6 +73,8 @@ func NewSnippetModel() SnippetModel{
 		item{title: "Gaffer’s tape", desc: "Basically sticky fabric"},
 		item{title: "Terrycloth", desc: "In other words, towel fabric"},
 	}
+	
+
 
 	mylist:= list.New(items, list.NewDefaultDelegate(), 50, 50)
 	mylist.Title = "My Fave Things"
