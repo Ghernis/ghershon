@@ -102,7 +102,9 @@ func (m SnippetModel) View() string {
     tabs := lipgloss.JoinHorizontal(lipgloss.Top,
         styles.ActiveTab.Render("Dashboard"),
         styles.TabStyle.Render("Snippets"),
-        styles.TabStyle.Render("Projects"),
+        styles.TabStyle.Render("Bootstrap"),
+        styles.TabStyle.Render("Secrets"),
+        styles.TabStyle.Render("Tickets"),
     )
 
 	title := titleStyle.Render(" Personal Finance Dashboard (2024)")

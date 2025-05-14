@@ -31,7 +31,7 @@ func loadConfigs() Config{
 }
 func DoSomething(snippetsSrv *sql_l.SnippetsService){
 	log.Println("Something in db with utils")
-	snippetsSrv.GetData()
+	//snippetsSrv.GetData()
 
 }
 

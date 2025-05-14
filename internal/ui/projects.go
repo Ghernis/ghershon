@@ -195,7 +195,7 @@ func (m BootstrapModel) View() string {
     tabs := lipgloss.JoinHorizontal(lipgloss.Top,
         styles.TabStyle.Render("Dashboard"),
         styles.TabStyle.Render("Snippets"),
-        styles.ActiveTab.Render("Projects"),
+        styles.ActiveTab.Render("Bootstrap"),
     )
 	if m.quitting {
 		return " Exiting...\n"

@@ -6,19 +6,78 @@ import (
 	"html/template"
 	"time"
 	"bytes"
+	"strings"
 	//"database/sql"
 	"fmt"
+	"os"
 	"log"
 	"github.com/jmoiron/sqlx"
 	_ "modernc.org/sqlite"
 )
 
 func NewDB(driver, dsn string) (*sqlx.DB, error) {
+	// Create if not exist
+	if _, err := os.Stat(dsn); os.IsNotExist(err) {
+		log.Println("Database does not exist. Creating...")
+		file, err := os.Create(dsn)
+		if err != nil {
+			log.Fatalf("Failed to create database file: %v", err)
+		}
+		file.Close()
+	}
+	// Connect
     db, err := sqlx.Connect(driver, dsn)
     if err != nil {
         return nil, err
     }
+	// Initialize
+	err = initializeSchema(db)
+	if err != nil {
+		log.Fatalf("Failed to initialize schema: %v", err)
+	}
+
+	log.Println("Database initialized successfully.")
     return db, nil
+}
+func initializeSchema(db *sqlx.DB) error{
+	path := "internal/storage/tables.sql"
+	schema, err := os.ReadFile(path)
+	if err != nil{
+		fmt.Errorf("Reading db file %w",err)
+	}
+	statements := strings.Split(string(schema),";")
+	for	 _, stmt := range statements {
+		stmt = strings.TrimSpace(stmt)
+		if stmt == "" {
+			continue
+		}
+		_,err = db.Exec(stmt)
+		if err != nil{
+			fmt.Errorf("Error in statement: %w",err)
+		}
+	}	
+
+	//err = seedProjectsTable(db)
+	if err != nil{
+		fmt.Errorf("Seeding projects %w",err)
+	}
+	return err
+}
+
+func seedProjectsTable(db *sqlx.DB) error {
+	var count int
+	err := db.Get(&count, "SELECT COUNT(*) FROM projects")
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		_, err := db.Exec(`
+			INSERT INTO projects (title, description, created_at)
+			VALUES (?, ?, CURRENT_TIMESTAMP)
+		`, "Example Project", "This is a starter project")
+		return err
+	}
+	return nil
 }
 
 func MustNewDB(driver, dsn string) *sqlx.DB {
@@ -41,6 +100,7 @@ func NewSnippetsService(db *sqlx.DB) *SnippetsService {
 type Project struct {
 	ID                    int64     `db:"id"`
 	Title                 string    `db:"title"`
+	Id_ticket             string    `db:"id_ticket"`
 	Description           string    `db:"description"`
 	ProblemStatement      string    `db:"problem_statement"`
 	Architecture          string    `db:"architecture"`
@@ -50,7 +110,8 @@ type Project struct {
 	TimeBeforeAutomation  int       `db:"time_before_automation"`
 	TimeAfterAutomation   int       `db:"time_after_automation"`
 	Tags                  string    `db:"tags"`
-	CreatedAt             time.Time `db:"created_at"`
+	//CreatedAt             time.Time `db:"created_at"`
+	CreatedAt             string    `db:"created_at"`
 }
 
 type ProjectTask struct {
@@ -156,6 +217,20 @@ func (s *SnippetsService) AddSecret(sec Secret) error{
 		`)
 
 	_,err := s.db.NamedExec(query,sec)
+	
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return err
+}
+
+func (s *SnippetsService) AddProject(project Project) error{
+	query := fmt.Sprintf(`
+        INSERT INTO projects (title,id_ticket, description, problem_statement, architecture,evidence,expected_finish_date,completed_at,time_before_automation,time_after_automation,tags)
+		VALUES (:title,id_ticket, :description, :problem_statement, :architecture,:evidence,:expected_finish_date,:completed_at,:time_before_automation,:time_after_automation,:tags)
+		`)
+
+	_,err := s.db.NamedExec(query,project)
 	
 	if err != nil {
 		log.Fatal("Error in query: ",err)

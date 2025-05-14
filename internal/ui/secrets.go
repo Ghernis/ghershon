@@ -66,7 +66,7 @@ func (m SecretModel) View() string {
     tabs := lipgloss.JoinHorizontal(lipgloss.Top,
         styles.TabStyle.Render("Dashboard"),
         styles.TabStyle.Render("Snippets"),
-        styles.TabStyle.Render("Projects"),
+        styles.TabStyle.Render("Bootstrap"),
         styles.ActiveTab.Render("Secrets"),
         styles.TabStyle.Render("Tickets"),
     )

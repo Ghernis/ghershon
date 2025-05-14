@@ -24,7 +24,7 @@ func (m DashboardModel) View() string {
     tabs := lipgloss.JoinHorizontal(lipgloss.Top,
         styles.ActiveTab.Render("Dashboard"),
         styles.TabStyle.Render("Snippets"),
-        styles.TabStyle.Render("Projects"),
+        styles.TabStyle.Render("Bootstrap"),
         styles.TabStyle.Render("Secrets"),
         styles.TabStyle.Render("Tickets"),
     )
@@ -38,8 +38,8 @@ func (m DashboardModel) View() string {
                        ░▒▓█ G H E R S H O N   T U I █▓▒░                       
 ░░▒▒▓▓████████████████████████████████████████████████████████▓▓▒▒░░
 
-                    version 0.1.0   ·   by Hernan Gomez
-              "Automate the boring. Track the cool."
+                     version 0.1.0   ·   by Hernan Gomez
+					     "Automate the boring. Je"
 `
 	logo := styles.LogoStyle.Render(banner)
 
