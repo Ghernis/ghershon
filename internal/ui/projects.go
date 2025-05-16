@@ -98,10 +98,10 @@ func (m BootstrapModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
-			m.quitting = true
-			return m, tea.Quit
-
+//		case "esc":
+//			m.quitting = true
+//			return m, tea.Quit
+//
 		case "enter":
 			if m.focusIndex == len(m.inputs)-1 {
 				// Last input, submit

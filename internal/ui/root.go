@@ -6,20 +6,26 @@ import (
 )
 
 type Screen int
+type Mode int
 
 const (
-    Dashboard Screen = iota
+    ProjectForm Screen = iota
     Snippets
     Bootstrap
     Secret
 )
+const (
+	modeInsert Mode = iota
+	modeNormal 
+)
 
 type RootModel struct {
     current Screen
-    dash    DashboardModel
+    dash    ProjectFormModel
 	snippets SnippetModel
 	bootstrap BootstrapModel
 	secret SecretModel
+	mode *Mode
 }
 
 func (m RootModel) Init() tea.Cmd {
@@ -32,11 +38,15 @@ func (m RootModel) Init() tea.Cmd {
 func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
     case tea.KeyMsg:
+		if *m.mode == modeNormal{
+			switch msg.String(){
+				case "q", "ctrl+c":
+					return m,tea.Quit
+			}
+		}
         switch msg.String() {
-		case "q", "ctrl+c":
-			return m,tea.Quit
         case "1":
-            m.current = Dashboard
+            m.current = ProjectForm
 			return m,m.dash.Init()
         case "2":
             m.current = Snippets
@@ -51,11 +61,11 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     }
 	var cmd tea.Cmd
 	switch m.current{
-		case Dashboard:
+		case ProjectForm:
 			var c tea.Cmd
 			var updated tea.Model
 			updated, c =m.dash.Update(msg)
-			m.dash = updated.(DashboardModel)
+			m.dash = updated.(ProjectFormModel)
 			cmd=c
 		case Snippets:
 			var c tea.Cmd
@@ -79,18 +89,20 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     return m, cmd
 }
 func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
+	mode := modeNormal
 	return RootModel{
-		current: Dashboard,
-		dash: NewDashboardModel(),
-		snippets: NewSnippetModel(),
+		current: ProjectForm,
+		dash: NewProjectFormModel(&mode),
+		snippets: NewSnippetModel(&mode),
 		bootstrap: NewBootstrapModel(),
 		secret: NewSecretModel(db_service),
+		mode: &mode,
 	}	
 }
 
 func (m RootModel) View() string {
     switch m.current {
-    case Dashboard:
+    case ProjectForm:
         return m.dash.View()
     case Snippets:
         return m.snippets.View()

@@ -37,6 +37,7 @@ type SnippetModel struct {
 	viewport viewport.Model
 	content string
 	ready bool
+	mode *Mode
 }
 
 func (m SnippetModel) Init() tea.Cmd {
@@ -47,7 +48,7 @@ func (m SnippetModel) Init() tea.Cmd {
 //	return secrets
 //}
 
-func NewSnippetModel() SnippetModel{
+func NewSnippetModel(mode *Mode) SnippetModel{
 	items := []list.Item{
 		item{title: "Raspberry Pi’s", desc: "I have ’em all over my house"},
 		item{title: "Nutella", desc: "It's good on toast"},
@@ -80,15 +81,28 @@ func NewSnippetModel() SnippetModel{
 	mylist.Title = "My Fave Things"
 	return SnippetModel{
 		list:mylist,
+		mode: mode,
 	}
 }
+
 
 func (m SnippetModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
+		switch msg.String(){
+			case "q":
+				if *m.mode == modeInsert{
+					return m, nil
+				}
+				return m,nil
+			case "esc":
+				fmt.Println("esc en snipets")
+				*m.mode=modeNormal
+				return m, nil
+			case "enter":
+				*m.mode=modeInsert
+				return m, nil
+	}
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
@@ -97,6 +111,7 @@ func (m SnippetModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd
 }
+
 
 func (m SnippetModel) View() string {
     tabs := lipgloss.JoinHorizontal(lipgloss.Top,
