@@ -141,10 +141,13 @@ type Snippet struct {
 }
 type Secret struct {
 	Id int64 `db:"id"`
+    Project_id int64 `db:"project_id"`
+    Environment string `db:"environment"`
 	Name string `db:"name"`
 	Description string `db:"description"`
 	Secret_type string `db:"secret_type"`
 	Encoded_value string `db:"encoded_value"`
+    Is_encrypted bool `db:"is_encrypted"`
 	//Created_at time.Time `db:"created_at"`
 	Created_at string `db:"created_at"`
 }
@@ -212,8 +215,8 @@ func (s *SnippetsService) FindAllSecret()[]Secret{
 func (s *SnippetsService) AddSecret(sec Secret) error{
 	//fmt.Println(search_string)
 	query := fmt.Sprintf(`
-        INSERT INTO secrets (name, description, secret_type, encoded_value)
-		VALUES (:name,:description, :secret_type,  :encoded_value)
+        INSERT INTO secrets (name,project_id,environment, description, secret_type, encoded_value,is_encrypted)
+		VALUES (:name,:project_id,:environment,:description, :secret_type,  :encoded_value,: is_encrypted)
 		`)
 
 	_,err := s.db.NamedExec(query,sec)

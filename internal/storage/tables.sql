@@ -42,9 +42,14 @@ CREATE TABLE IF NOT EXISTS project_tasks (
 
 CREATE TABLE IF NOT EXISTS secrets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,                  
-    description TEXT,                    
-    secret_type TEXT,                    
-    encoded_value TEXT NOT NULL,         
-    created_at TEXT DEFAULT (datetime('now'))
+    project_id INTEGER,
+    environment TEXT DEFAULT 'default',
+    name TEXT NOT NULL,
+    description TEXT,
+    secret_type TEXT,
+    encoded_value TEXT NOT NULL,
+    is_encrypted BOOLEAN DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (project_id) REFERENCES projects(id),
+    UNIQUE (project_id, environment, name)
 );

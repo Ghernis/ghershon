@@ -17,6 +17,7 @@ import (
 
 type SecretModel struct {
 	list list.Model
+	mode         *Mode
 }
 //type item struct {
 //	title, desc string
@@ -26,7 +27,7 @@ type SecretModel struct {
 //func (i item) Description() string { return i.desc }
 //func (i item) FilterValue() string { return i.title }
 
-func NewSecretModel(db_service *sql_l.SnippetsService ) SecretModel{
+func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 	secrets:=db_service.FindAllSecret()
 
 	var items []list.Item
@@ -40,6 +41,7 @@ func NewSecretModel(db_service *sql_l.SnippetsService ) SecretModel{
 	mylist.Title = "Secrets"
 	return SecretModel{
 		list:mylist,
+		mode: mode,
 	}
 
 }
@@ -49,7 +51,17 @@ func (m SecretModel) Init() tea.Cmd{
 }
 func (m SecretModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	//case tea.KeyMsg: // TODO cambiar esto
+	case tea.KeyMsg:
+		switch  msg.String(){
+			case "i":
+				*m.mode=modeInsert	
+				return m,nil
+			case "esc":
+				*m.mode=modeNormal	
+				return m,nil
+			case "q":
+				return m,nil
+		}
 	//	if msg.String() == "ctrl+c" {
 	//		return m, tea.Quit
 	//	}

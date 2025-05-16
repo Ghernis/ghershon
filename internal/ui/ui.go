@@ -96,7 +96,7 @@ func (m SnippetModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m,nil
 			case "esc":
-				fmt.Println("esc en snipets")
+				//fmt.Println("esc en snipets")
 				*m.mode=modeNormal
 				return m, nil
 			case "enter":

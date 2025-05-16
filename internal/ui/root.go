@@ -2,7 +2,10 @@ package ui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"ghershon/internal/storage"
+	"fmt"
+	"strings"
 )
 
 type Screen int
@@ -95,23 +98,56 @@ func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
 		dash: NewProjectFormModel(&mode),
 		snippets: NewSnippetModel(&mode),
 		bootstrap: NewBootstrapModel(),
-		secret: NewSecretModel(db_service),
+		secret: NewSecretModel(db_service,&mode),
 		mode: &mode,
 	}	
 }
+func screenName(s Screen) string {
+    switch s {
+    case ProjectForm:
+        return "Project Form"
+    case Snippets:
+        return "Snippets"
+    case Bootstrap:
+        return "Bootstrap"
+    case Secret:
+        return "Secrets"
+    default:
+        return "Unknown"
+    }
+}
+
+func modeName(m Mode) string {
+    if m == modeNormal {
+        return "NORMAL"
+    }
+    return "INSERT"
+}
 
 func (m RootModel) View() string {
+	var content string
     switch m.current {
     case ProjectForm:
-        return m.dash.View()
+        content = m.dash.View()
     case Snippets:
-        return m.snippets.View()
+        content = m.snippets.View()
     case Bootstrap:
-        return m.bootstrap.View()
+        content = m.bootstrap.View()
     case Secret:
-        return m.secret.View()
+        content = m.secret.View()
+
 
     default:
-        return "Unknown screen"
+        content = "Unknown screen"
     }
+	header := fmt.Sprintf("╔═ Tab: %s ══════════════════════════════════╗", screenName(m.current))
+    footer := fmt.Sprintf("║ Mode: %s · [q] quit · [tab] move ║", modeName(*m.mode))
+    separator := "╠" + strings.Repeat("═", 44) + "╣"
+	return lipgloss.JoinVertical(lipgloss.Left,
+        header,
+        separator,
+        content,
+        separator,
+        footer,
+    )
 }
