@@ -1,7 +1,7 @@
 package ui
 
 import (
-	//"fmt"
+	"fmt"
 //	"os"
 //	"strings"
 //
@@ -29,7 +29,11 @@ type SecretModel struct {
 
 func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 	secrets:=db_service.FindAllSecret()
-
+	projects:= db_service.FindAllProjects()
+	flattened:=projects[0].Flatten()
+	fmt.Println(*flattened.Description)
+	fmt.Println(flattened)
+	
 	var items []list.Item
 	for _,v := range secrets{
 		items=append(items,item{

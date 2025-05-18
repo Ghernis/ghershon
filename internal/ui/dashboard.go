@@ -44,11 +44,31 @@ func NewProjectFormModel(mode *Mode) ProjectFormModel{
     return ProjectFormModel{
 			inputs: inputs,
 			mode: mode,
+			submitting: false,
 		}
 	}
 
+type SubmitFinishedMsg struct{
+	Data string
+	Err error
+}
+
+
+func doSubmitCmd(inputs []textinput.Model,bootstrap bool, ticket bool) tea.Cmd{
+	return func() tea.Msg{
+		//fmt.Println(inputs[0])
+		for _,v := range inputs{
+			fmt.Println(v.Value())
+		}
+		fmt.Println(bootstrap,ticket)
+		return SubmitFinishedMsg{Data: "done", Err:nil}
+	}	
+}
+
 func (m ProjectFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
+	case SubmitFinishedMsg:
+		m.submitting=false
     case tea.KeyMsg:
         switch msg.String() {
         case " ":
@@ -58,33 +78,54 @@ func (m ProjectFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.createTicket = !m.createTicket
             }
 		case "enter":
-			
-			*m.mode=modeInsert
-            if m.focusIdx == len(m.inputs)-1 {
-                m.submitting = true
-				m.focusIdx++
-                //return m, submitToDB(m) // your function to persist to db
-                return m , nil// your function to persist to db
-            }
+			if *m.mode== modeNormal && m.submitting != true{
+				m.submitting=true
+				fmt.Println("Submit")
+				return m,tea.Batch(
+					//doSubmitCmd(m.formData),
+					doSubmitCmd(m.inputs,m.bootstrap,m.createTicket),
+					//toast
+				)
+			}
+		case "i":
+			if *m.mode==modeNormal{
+				*m.mode=modeInsert
+				return m,nil
+			}
 		case "esc":
 			*m.mode=modeNormal
 			return m, nil
 
-        //case "up", "k":
+        case "k":
+			if *m.mode==modeNormal{			
+				if m.focusIdx > 0 {
+					m.focusIdx--
+				}
+			}
+        case "j":
+			if *m.mode==modeNormal{			
+				if m.focusIdx < len(m.inputs)+1 {//-1
+					m.focusIdx++
+					if m.focusIdx < len(m.inputs)-1{
+					} else if m.focusIdx == len(m.inputs){	
+					} else if m.focusIdx == len(m.inputs)+1{	
+
+					}
+				}
+			}
         case "shift+tab","backtab","up":
-            if m.focusIdx > 0 {
-                m.focusIdx--
-            }
-        //case "down", "j":
+			if m.focusIdx > 0 {
+				m.focusIdx--
+			}
         case "down", "tab":
-            if m.focusIdx < len(m.inputs)+1 {//-1
+			if m.focusIdx < len(m.inputs)+1 {//-1
 				m.focusIdx++
 				if m.focusIdx < len(m.inputs)-1{
 				} else if m.focusIdx == len(m.inputs){	
 				} else if m.focusIdx == len(m.inputs)+1{	
 
 				}
-            }
+			}
         }
 
         for i := range m.inputs {
@@ -97,9 +138,11 @@ func (m ProjectFormModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     }
 
     cmds := make([]tea.Cmd, len(m.inputs))
-    for i := range m.inputs {
-        m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
-    }
+	if *m.mode!=modeNormal{
+		for i := range m.inputs {
+			m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+		}
+	}
 
     return m, tea.Batch(cmds...)
 }

@@ -57,7 +57,7 @@ func initializeSchema(db *sqlx.DB) error{
 		}
 	}	
 
-	//err = seedProjectsTable(db)
+	err = seedProjectsTable(db)
 	if err != nil{
 		fmt.Errorf("Seeding projects %w",err)
 	}
@@ -71,10 +71,11 @@ func seedProjectsTable(db *sqlx.DB) error {
 		return err
 	}
 	if count == 0 {
+		desc := "This is a starter project"
 		_, err := db.Exec(`
-			INSERT INTO projects (title, description, created_at)
-			VALUES (?, ?, CURRENT_TIMESTAMP)
-		`, "Example Project", "This is a starter project")
+			INSERT INTO projects (title, description )
+			VALUES (?, ?)
+		`, "Example Project", &desc)
 		return err
 	}
 	return nil
@@ -100,18 +101,51 @@ func NewSnippetsService(db *sqlx.DB) *SnippetsService {
 type Project struct {
 	ID                    int64     `db:"id"`
 	Title                 string    `db:"title"`
-	Id_ticket             string    `db:"id_ticket"`
-	Description           string    `db:"description"`
-	ProblemStatement      string    `db:"problem_statement"`
-	Architecture          string    `db:"architecture"`
-	Evidence              string    `db:"evidence"`
-	ExpectedFinishDate    string    `db:"expected_finish_date"`
+	Id_ticket             *string    `db:"id_ticket"`
+	Description           *string    `db:"description"`
+	ProblemStatement      *string    `db:"problem_statement"`
+	Architecture          *string    `db:"architecture"`
+	Evidence              *string    `db:"evidence"`
+	ExpectedFinishDate    *string    `db:"expected_finish_date"`
 	CompletedAt           *string   `db:"completed_at"`
-	TimeBeforeAutomation  int       `db:"time_before_automation"`
-	TimeAfterAutomation   int       `db:"time_after_automation"`
-	Tags                  string    `db:"tags"`
+	TimeBeforeAutomation  *int       `db:"time_before_automation"`
+	TimeAfterAutomation   *int       `db:"time_after_automation"`
+	Tags                  *string    `db:"tags"`
 	//CreatedAt             time.Time `db:"created_at"`
-	CreatedAt             string    `db:"created_at"`
+	CreatedAt             *string    `db:"created_at"`
+}
+
+func (p Project) Flatten() Project {
+	return Project{
+		ID:                   p.ID,
+		Title:                p.Title,
+		Id_ticket:            derefString(p.Id_ticket),
+		Description:          derefString(p.Description),
+		ProblemStatement:     derefString(p.ProblemStatement),
+		Architecture:         derefString(p.Architecture),
+		Evidence:             derefString(p.Evidence),
+		ExpectedFinishDate:   derefString(p.ExpectedFinishDate),
+		CompletedAt:          derefString(p.CompletedAt),
+		TimeBeforeAutomation: derefInt(p.TimeBeforeAutomation),
+		TimeAfterAutomation:  derefInt(p.TimeAfterAutomation),
+		Tags:                 derefString(p.Tags),
+		CreatedAt:            p.CreatedAt,
+	}
+}
+func derefString(s *string) *string {
+	if s == nil {
+		empty := ""
+		return &empty
+	}
+	return s
+}
+
+func derefInt(i *int) *int {
+	if i == nil {
+		zero := 0
+		return &zero
+	}
+	return i
 }
 
 type ProjectTask struct {
@@ -225,6 +259,20 @@ func (s *SnippetsService) AddSecret(sec Secret) error{
 		log.Fatal("Error in query: ",err)
 	}
 	return err
+}
+
+func (s *SnippetsService) FindAllProjects()[]Project{
+	//fmt.Println(search_string)
+	getData := fmt.Sprintf(`
+		select * from projects;
+	`)
+	var data []Project
+	//fmt.Println(getData)
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data
 }
 
 func (s *SnippetsService) AddProject(project Project) error{

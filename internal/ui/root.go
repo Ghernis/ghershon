@@ -49,17 +49,25 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
         switch msg.String() {
         case "1":
-            m.current = ProjectForm
-			return m,m.dash.Init()
+			if *m.mode==modeNormal{
+				m.current = ProjectForm
+				return m,m.dash.Init()
+			}
         case "2":
-            m.current = Snippets
-			return m,m.snippets.Init()
+			if *m.mode==modeNormal{
+				m.current = Snippets
+				return m,m.snippets.Init()
+			}
         case "3":
-            m.current = Bootstrap
-			return m,m.bootstrap.Init()
+			if *m.mode==modeNormal{
+				m.current = Bootstrap
+				return m,m.bootstrap.Init()
+			}
         case "4":
-            m.current = Secret
-			return m,m.secret.Init()
+			if *m.mode==modeNormal{
+				m.current = Secret
+				return m,m.secret.Init()
+			}
         }
     }
 	var cmd tea.Cmd
@@ -97,7 +105,7 @@ func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
 		current: ProjectForm,
 		dash: NewProjectFormModel(&mode),
 		snippets: NewSnippetModel(&mode),
-		bootstrap: NewBootstrapModel(),
+		bootstrap: NewBootstrapModel(&mode),
 		secret: NewSecretModel(db_service,&mode),
 		mode: &mode,
 	}	

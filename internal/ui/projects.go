@@ -35,9 +35,10 @@ type BootstrapModel struct {
 	projectType string
 	quitting    bool
 	toast toast.ToastModel
+	mode *Mode
 }
 
-func NewBootstrapModel() BootstrapModel {
+func NewBootstrapModel(mode *Mode) BootstrapModel {
 
 	items := []list.Item{
 		ProjectTypeItem{"Python Script","Simple CLI or Pipe"},
@@ -81,6 +82,7 @@ func NewBootstrapModel() BootstrapModel {
 		focusIndex:  0,
 		projectType: "Python Script", // Fake dropdown, static for now
 		toast: toast.NewToastModel(),
+		mode: mode,
 	}
 }
 
@@ -129,18 +131,25 @@ func (m BootstrapModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			// Move focus to next
 			m.focusIndex++
-		case "up":
-			m.focusIndex--
-			if m.focusIndex <0{
-				m.focusIndex = len(m.inputs)-1
-			}	
-			m= m.updateFocus()
-		case "tab","down":
-			m.focusIndex++
-			if m.focusIndex >= len(m.inputs){
-				m.focusIndex=0
+		case "up","k":
+			if *m.mode==modeNormal{
+				m.focusIndex--
+				if m.focusIndex <0{
+					m.focusIndex = len(m.inputs)-1
+				}	
+				m= m.updateFocus()
 			}
-			m= m.updateFocus()
+			//return m,nil
+
+		case "tab","down","j":
+			if *m.mode==modeNormal{
+				m.focusIndex++
+				if m.focusIndex >= len(m.inputs){
+					m.focusIndex=0
+				}
+				m= m.updateFocus()
+			}
+			//return m,nil
 			
 		}
 
