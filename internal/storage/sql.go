@@ -5,9 +5,11 @@ package sql_l
 import (
 	"html/template"
 	"time"
+	//"strconv"
 	"bytes"
 	"strings"
 	//"database/sql"
+    "ghershon/internal/models"
 	"fmt"
 	"os"
 	"log"
@@ -97,56 +99,24 @@ func NewSnippetsService(db *sqlx.DB) *SnippetsService {
 	return &SnippetsService{db: db}
 }
 
+//func (p ProjectDTO) toDB() Project{//viendo
+//	return Project{
+//		Title:                p.Title,
+//		Id_ticket:            derefString(p.Id_ticket),
+//		Description:          derefString(p.Description),
+//		ProblemStatement:     derefString(p.ProblemStatement),
+//		Architecture:         derefString(p.Architecture),
+//		Evidence:             derefString(p.Evidence),
+//		ExpectedFinishDate:   derefString(p.ExpectedFinishDate),
+//		CompletedAt:          derefString(p.CompletedAt),
+//		TimeBeforeAutomation: derefInt(p.TimeBeforeAutomation),
+//		TimeAfterAutomation:  derefInt(p.TimeAfterAutomation),
+//		Tags:                 derefString(p.Tags),
+//		CreatedAt:            p.CreatedAt,
+//		
+//	}.Flatten()
+//}
 
-type Project struct {
-	ID                    int64     `db:"id"`
-	Title                 string    `db:"title"`
-	Id_ticket             *string    `db:"id_ticket"`
-	Description           *string    `db:"description"`
-	ProblemStatement      *string    `db:"problem_statement"`
-	Architecture          *string    `db:"architecture"`
-	Evidence              *string    `db:"evidence"`
-	ExpectedFinishDate    *string    `db:"expected_finish_date"`
-	CompletedAt           *string   `db:"completed_at"`
-	TimeBeforeAutomation  *int       `db:"time_before_automation"`
-	TimeAfterAutomation   *int       `db:"time_after_automation"`
-	Tags                  *string    `db:"tags"`
-	//CreatedAt             time.Time `db:"created_at"`
-	CreatedAt             *string    `db:"created_at"`
-}
-
-func (p Project) Flatten() Project {
-	return Project{
-		ID:                   p.ID,
-		Title:                p.Title,
-		Id_ticket:            derefString(p.Id_ticket),
-		Description:          derefString(p.Description),
-		ProblemStatement:     derefString(p.ProblemStatement),
-		Architecture:         derefString(p.Architecture),
-		Evidence:             derefString(p.Evidence),
-		ExpectedFinishDate:   derefString(p.ExpectedFinishDate),
-		CompletedAt:          derefString(p.CompletedAt),
-		TimeBeforeAutomation: derefInt(p.TimeBeforeAutomation),
-		TimeAfterAutomation:  derefInt(p.TimeAfterAutomation),
-		Tags:                 derefString(p.Tags),
-		CreatedAt:            p.CreatedAt,
-	}
-}
-func derefString(s *string) *string {
-	if s == nil {
-		empty := ""
-		return &empty
-	}
-	return s
-}
-
-func derefInt(i *int) *int {
-	if i == nil {
-		zero := 0
-		return &zero
-	}
-	return i
-}
 
 type ProjectTask struct {
 	ID         int64     `db:"id"`
@@ -172,18 +142,6 @@ type Snippet struct {
 	//CreatedAt      time.Time `db:"created_at"`
 	CreatedAt      string `db:"created_at"`
 	ProjectID  int64     `db:"project_id"`
-}
-type Secret struct {
-	Id int64 `db:"id"`
-    Project_id int64 `db:"project_id"`
-    Environment string `db:"environment"`
-	Name string `db:"name"`
-	Description string `db:"description"`
-	Secret_type string `db:"secret_type"`
-	Encoded_value string `db:"encoded_value"`
-    Is_encrypted bool `db:"is_encrypted"`
-	//Created_at time.Time `db:"created_at"`
-	Created_at string `db:"created_at"`
 }
 
 func (s *SnippetsService) FindData2(search_string string) []Snippet{
@@ -219,12 +177,12 @@ func (s *SnippetsService) FindData(search_string string) []Snippet{
 	}
 	return data
 }
-func (s *SnippetsService) FindSecret(search_id int64) []Secret{
+func (s *SnippetsService) FindSecret(search_id int64) []models.Secret{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from secrets where  id == %v;
 	`,search_id)
-	var data []Secret
+	var data []models.Secret
 	fmt.Println(getData)
 	err := s.db.Select(&data,getData)
 	if err != nil {
@@ -232,12 +190,12 @@ func (s *SnippetsService) FindSecret(search_id int64) []Secret{
 	}
 	return data
 }
-func (s *SnippetsService) FindAllSecret()[]Secret{
+func (s *SnippetsService) FindAllSecret()[]models.Secret{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from secrets;
 	`)
-	var data []Secret
+	var data []models.Secret
 	fmt.Println(getData)
 	err := s.db.Select(&data,getData)
 	if err != nil {
@@ -246,11 +204,11 @@ func (s *SnippetsService) FindAllSecret()[]Secret{
 	return data
 }
 
-func (s *SnippetsService) AddSecret(sec Secret) error{
+func (s *SnippetsService) AddSecret(sec models.Secret) error{
 	//fmt.Println(search_string)
 	query := fmt.Sprintf(`
-        INSERT INTO secrets (name,project_id,environment, description, secret_type, encoded_value,is_encrypted)
-		VALUES (:name,:project_id,:environment,:description, :secret_type,  :encoded_value,: is_encrypted)
+        INSERT INTO secrets (name,project_id,environment, description, secret_type, encoded_value,is_encrypted,created_at)
+		VALUES (:name,:project_id,:environment,:description, :secret_type, :encoded_value,:is_encrypted,:created_at)
 		`)
 
 	_,err := s.db.NamedExec(query,sec)
@@ -261,12 +219,12 @@ func (s *SnippetsService) AddSecret(sec Secret) error{
 	return err
 }
 
-func (s *SnippetsService) FindAllProjects()[]Project{
+func (s *SnippetsService) FindAllProjects()[]models.Project{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from projects;
 	`)
-	var data []Project
+	var data []models.Project
 	//fmt.Println(getData)
 	err := s.db.Select(&data,getData)
 	if err != nil {
@@ -275,10 +233,10 @@ func (s *SnippetsService) FindAllProjects()[]Project{
 	return data
 }
 
-func (s *SnippetsService) AddProject(project Project) error{
+func (s *SnippetsService) AddProject(project models.Project) error{
 	query := fmt.Sprintf(`
         INSERT INTO projects (title,id_ticket, description, problem_statement, architecture,evidence,expected_finish_date,completed_at,time_before_automation,time_after_automation,tags)
-		VALUES (:title,id_ticket, :description, :problem_statement, :architecture,:evidence,:expected_finish_date,:completed_at,:time_before_automation,:time_after_automation,:tags)
+		VALUES (:title,:id_ticket, :description, :problem_statement, :architecture,:evidence,:expected_finish_date,:completed_at,:time_before_automation,:time_after_automation,:tags)
 		`)
 
 	_,err := s.db.NamedExec(query,project)

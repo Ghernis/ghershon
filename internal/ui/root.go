@@ -103,7 +103,7 @@ func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
 	mode := modeNormal
 	return RootModel{
 		current: ProjectForm,
-		dash: NewProjectFormModel(&mode),
+		dash: NewProjectFormModel(db_service,&mode),
 		snippets: NewSnippetModel(&mode),
 		bootstrap: NewBootstrapModel(&mode),
 		secret: NewSecretModel(db_service,&mode),
