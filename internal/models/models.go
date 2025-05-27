@@ -7,16 +7,15 @@ import (
 
 type SecretFormInputs struct{
         Name textinput.Model
-		Env textinput.Model
 		Desc textinput.Model
 		Value textinput.Model
-		SecretType textinput.Model
+		SecretType  textinput.Model
 		Environment string
+		Project_id  int64
 }
 func (i SecretFormInputs) Slice() []textinput.Model {
 	return []textinput.Model{
 		i.Name,
-		i.Env,
 		i.Desc,
 		i.Value,
 		i.SecretType,
@@ -38,7 +37,7 @@ type Secret struct {
 func (p SecretFormInputs) ToSecret() Secret {
     return Secret{
         Name:                p.Name.Value(),
-		Project_id: 0,
+		Project_id:          p.Project_id,
         Description:          p.Desc.Value(),
 		Environment:          p.Environment,
         Secret_type:         p.SecretType.Value(),
@@ -49,10 +48,9 @@ func (p SecretFormInputs) ToSecret() Secret {
 }
 func (i *SecretFormInputs) FromSlice(inputs []textinput.Model){
 	i.Name = inputs[0]
-	i.Env = inputs[1]
-	i.Desc = inputs[2]
-	i.Value = inputs[3]
-	i.SecretType = inputs[4]
+	i.Desc = inputs[1]
+	i.Value = inputs[2]
+	i.SecretType = inputs[3]
 }
 
 type ProjectFormInputs struct{

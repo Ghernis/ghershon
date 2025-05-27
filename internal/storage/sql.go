@@ -38,7 +38,7 @@ func NewDB(driver, dsn string) (*sqlx.DB, error) {
 		log.Fatalf("Failed to initialize schema: %v", err)
 	}
 
-	log.Println("Database initialized successfully.")
+	//log.Println("Database initialized successfully.")
     return db, nil
 }
 func initializeSchema(db *sqlx.DB) error{
@@ -73,11 +73,11 @@ func seedProjectsTable(db *sqlx.DB) error {
 		return err
 	}
 	if count == 0 {
-		desc := "This is a starter project"
+		desc := "This is the global project config"
 		_, err := db.Exec(`
 			INSERT INTO projects (title, description )
 			VALUES (?, ?)
-		`, "Example Project", &desc)
+		`, "Global Project", &desc)
 		return err
 	}
 	return nil
@@ -184,6 +184,19 @@ func (s *SnippetsService) FindSecret(search_id int64) []models.Secret{
 	`,search_id)
 	var data []models.Secret
 	fmt.Println(getData)
+	err := s.db.Select(&data,getData)
+	if err != nil {
+		log.Fatal("Error in query: ",err)
+	}
+	return data
+}
+func (s *SnippetsService) FindSecretFiltered(name string,project_id int64,env string) []models.Secret{
+	//fmt.Println(search_string)
+	getData := fmt.Sprintf(`
+		select * from secrets where  (name == '%v' and project_id == %v and environment == '%v');
+	`,name,project_id,env)
+	var data []models.Secret
+	//fmt.Println(getData)
 	err := s.db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)

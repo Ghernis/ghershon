@@ -1,8 +1,11 @@
 package main
 
 import(
-	"fmt"
+	//"fmt"
 	"log"
+	"os"
+		
+	"ghershon/cmd/cli"
 	"ghershon/internal/ui"
 	"ghershon/internal/storage"
 	//"ghershon/internal/projects"
@@ -20,7 +23,11 @@ type App struct{
 }
 
 func newApp() *App{
-	db:= sql_l.MustNewDB("sqlite","./ghershon.db")
+	dbPath, err  := utils.GetDataPath("ghershon.db")
+	if err !=nil{
+		log.Fatal("Failet to get DB path: ",err)
+	}
+	db:= sql_l.MustNewDB("sqlite",dbPath)
 
 	if err := db.Ping(); err != nil {
 		log.Fatal(err)
@@ -31,32 +38,19 @@ func newApp() *App{
 	}
 }
 func main(){
-	//ui.Load()
-	//sql.Load()
-	config:=utils.Load()
-	fmt.Println(config.Bootstrap.Dir_path)
+	//config:=utils.Load()
+	//fmt.Println(config.Bootstrap.Dir_path)
 
 	app := newApp()
 	defer app.db.Close()
-	//app.SnippetsSrv.GetData()
-	//secrets:=app.SnippetsSrv.FindAllSecret()
-	//fmt.Println(secrets)
-	//err:=app.SnippetsSrv.AddSecret(sql_l.Secret{
-	//	Name:"hola",
-	//	Description:"hola",
-	//	Secret_type:"hola",
-	//	Encoded_value:"hola",
-	//})
-	//if err != nil{
-	//	fmt.Println(err)
-	//}
-	utils.DoSomething(app.SnippetsSrv)
-	p := tea.NewProgram(ui.NewRootModel(app.SnippetsSrv))
-	if err := p.Start(); err != nil{
-		panic(err)
+	if len(os.Args) >1{
+		cli.Execute(app.SnippetsSrv)
+	} else{
+		//utils.DoSomething(app.SnippetsSrv)
+		p := tea.NewProgram(ui.NewRootModel(app.SnippetsSrv))
+		if err := p.Start(); err != nil{
+			panic(err)
+		}
 	}
-	//bootstrap.Django_boot(config.Bootstrap.Dir_path,"test3")
-	//bootstrap.Python_boot(config.Bootstrap.Dir_path,"test2")
-
-
 }
+

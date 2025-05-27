@@ -13,19 +13,20 @@ import (
 	"ghershon/internal/storage"
 	"ghershon/internal/models"
 	"ghershon/internal/ui/toast"
-//	"ghershon/internal/projects"
 )
 
 type SecretModel struct {
-	inputs models.SecretFormInputs
-	envList list.Model
-	submitting bool
-    focusIdx     int
-    errMsg       string
-	mode         *Mode
+	inputs      models.SecretFormInputs
+	envList     list.Model
+	projectList list.Model
+	submitting  bool
+    focusIdx    int
+    errMsg      string
+	mode        *Mode
 	db_service  *sql_l.SnippetsService
 	toast       toast.ToastModel
 }
+
 type EnvItem struct{
 	title string
 	description string
@@ -34,6 +35,17 @@ type EnvItem struct{
 func (i EnvItem) Title() string       { return i.title }
 func (i EnvItem) Description() string { return i.description }
 func (i EnvItem) FilterValue() string { return i.title }
+
+type ProjectItem struct{
+	title string
+	description string
+	project_id int64
+}
+
+func (i ProjectItem) Title() string       { return i.title }
+func (i ProjectItem) Description() string { return i.description }
+func (i ProjectItem) Project_Id() int64 { return i.project_id }
+func (i ProjectItem) FilterValue() string { return i.title }
 
 func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 	envs := []list.Item{
@@ -47,15 +59,12 @@ func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 	envList.Title = "Environment"
 	sfi:= models.SecretFormInputs{
 		Name : textinput.New(),
-		Env : textinput.New(),
 		Desc : textinput.New(),
 		Value : textinput.New(),
 	    SecretType : textinput.New(),
 	}
 	sfi.Name.Placeholder = "Name"
 	sfi.Name.Focus()
-	sfi.Env.Placeholder = "Environment"
-	sfi.Env.Blur()
 	sfi.Desc.Placeholder = "Description"
 	sfi.Desc.Blur()
 	sfi.Value.Placeholder = "Value"
@@ -65,9 +74,17 @@ func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 
 	secrets:=db_service.FindAllSecret()
 	projects:= db_service.FindAllProjects()
-	flattened:=projects[0].Flatten()
-	fmt.Println(*flattened.Description)
-	fmt.Println(flattened)
+	//flattened:=projects[0].Flatten()
+	//fmt.Println(*flattened.Description)
+	//fmt.Println(flattened)
+	projectsItems := []list.Item{}
+	for _,v := range projects{
+		v=v.Flatten()
+		projectsItems=append(projectsItems,ProjectItem{v.Title,*v.Description,v.ID})
+	}
+	delegate = list.NewDefaultDelegate()
+	projectList := list.New(projectsItems,delegate,40,5)
+	projectList.Title = "Projects"
 	
 	var items []list.Item
 	for _,v := range secrets{
@@ -81,6 +98,7 @@ func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
 	return SecretModel{
 		inputs: sfi,
 		envList:envList,
+		projectList: projectList,
 		mode: mode,
 		submitting: false,
 		db_service: db_service,
@@ -97,6 +115,8 @@ func doSubmitSecretCmd(m SecretModel) tea.Cmd{
 		//fmt.Println(m.inputs.ToSecret())
 		selected := m.envList.SelectedItem().(EnvItem)
 		m.inputs.Environment = selected.Title()
+		selected_project := m.projectList.SelectedItem().(ProjectItem)
+		m.inputs.Project_id = selected_project.Project_Id()
 		err := m.db_service.AddSecret(m.inputs.ToSecret())
 		if err != nil{
 			return SubmitFinishedMsg{Data: "error", Err:err}
@@ -138,7 +158,7 @@ func (m SecretModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.focusIdx--
 					}
 				case "down", "tab":
-					if m.focusIdx < len(inputs) {//-1
+					if m.focusIdx < len(inputs)+1 {//-1
 						m.focusIdx++
 						//if m.focusIdx < len(inputs)-1{
 						//} else if m.focusIdx == len(inputs){	
@@ -153,7 +173,7 @@ func (m SecretModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case "j":
 					if *m.mode==modeNormal{			
-						if m.focusIdx < len(inputs) {//-1
+						if m.focusIdx < len(inputs)+1 {//-1
 							m.focusIdx++
 						}
 					}
@@ -176,7 +196,7 @@ func (m SecretModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		
 	}
 
-    cmds := make([]tea.Cmd, len(inputs)+1)
+    cmds := make([]tea.Cmd, len(inputs)+2)
 	if *m.mode!=modeNormal{
 		for i := range inputs {
 			inputs[i], cmds[i] = inputs[i].Update(msg)
@@ -184,6 +204,9 @@ func (m SecretModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	if m.focusIdx == len(inputs){
 		m.envList, cmds[len(inputs)] = m.envList.Update(msg)
+	}
+	if m.focusIdx == len(inputs)+1{
+		m.projectList, cmds[len(inputs)+1] = m.projectList.Update(msg)
 	}
 	m.inputs.FromSlice(inputs)
     return m, tea.Batch(cmds...)
@@ -199,7 +222,8 @@ func (m SecretModel) View() string {
         b.WriteString(fmt.Sprintf("║ %-25s %s ║\n", m.inputs.Slice()[i].Placeholder+":", m.inputs.Slice()[i].View()))
     }
     b.WriteString("╠════════════════════════════════════════════╣\n")
-		b.WriteString(m.envList.View() + "\n")
+	b.WriteString(m.envList.View() + "\n")
+	b.WriteString(m.projectList.View() + "\n")
     if m.errMsg != "" {
         b.WriteString(fmt.Sprintf("║ Error: %-33s ║\n", m.errMsg))
     }
