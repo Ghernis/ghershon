@@ -19,10 +19,14 @@ import(
 
 type App struct{
 	db *sqlx.DB
+	store Store
+}
+type Store struct{
 	SnippetsSrv *sql_l.SnippetsService
+	key_secret []byte
 }
 
-func newApp() *App{
+func newApp(key []byte) *App{
 	dbPath, err  := utils.GetDataPath("ghershon.db")
 	if err !=nil{
 		log.Fatal("Failet to get DB path: ",err)
@@ -34,23 +38,30 @@ func newApp() *App{
 	}
 	return &App{
 		db: db,
-		SnippetsSrv: sql_l.NewSnippetsService(db),
+		store: Store{
+			SnippetsSrv: sql_l.NewSnippetsService(db),
+			key_secret: key,
+		},
 	}
 }
 func main(){
 
-	_,err:=encrypt.EnsureEncryptionKey()
+	key_name,err:=encrypt.EnsureEncryptionKey()
+	if err != nil{
+		log.Fatal(err)
+	}
+	key_encrypt,err := utils.LoadKey(key_name)
 	if err != nil{
 		log.Fatal(err)
 	}
 
-	app := newApp()
+	app := newApp(key_encrypt)
 	defer app.db.Close()
 	if len(os.Args) >1{
-		cli.Execute(app.SnippetsSrv)
+		cli.Execute(app.store.SnippetsSrv)
 	} else{
 		//utils.DoSomething(app.SnippetsSrv)
-		p := tea.NewProgram(ui.NewRootModel(app.SnippetsSrv))
+		p := tea.NewProgram(ui.NewRootModel(app.store.SnippetsSrv))
 		if err := p.Start(); err != nil{
 			panic(err)
 		}
