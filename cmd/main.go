@@ -7,6 +7,7 @@ import(
 		
 	"ghershon/cmd/cli"
 	"ghershon/internal/ui"
+	"ghershon/internal/appstate"
 	"ghershon/internal/storage"
 	"ghershon/internal/security"
 	"ghershon/pkg/utils"
@@ -19,11 +20,7 @@ import(
 
 type App struct{
 	db *sqlx.DB
-	store Store
-}
-type Store struct{
-	SnippetsSrv *sql_l.SnippetsService
-	key_secret []byte
+	store appstate.AppServices
 }
 
 func newApp(key []byte) *App{
@@ -38,9 +35,9 @@ func newApp(key []byte) *App{
 	}
 	return &App{
 		db: db,
-		store: Store{
-			SnippetsSrv: sql_l.NewSnippetsService(db),
-			key_secret: key,
+		store: appstate.AppServices{
+			DatabaseSrv: sql_l.NewDatabaseService(db),
+			KeySecret: key,
 		},
 	}
 }
@@ -57,11 +54,12 @@ func main(){
 
 	app := newApp(key_encrypt)
 	defer app.db.Close()
+
 	if len(os.Args) >1{
-		cli.Execute(app.store.SnippetsSrv)
+		cli.Execute(app.store.DatabaseSrv,app.store.KeySecret)
 	} else{
 		//utils.DoSomething(app.SnippetsSrv)
-		p := tea.NewProgram(ui.NewRootModel(app.store.SnippetsSrv))
+		p := tea.NewProgram(ui.NewRootModel(app.store.DatabaseSrv))
 		if err := p.Start(); err != nil{
 			panic(err)
 		}

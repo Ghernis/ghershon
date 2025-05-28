@@ -99,7 +99,7 @@ func (m RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
     return m, cmd
 }
-func NewRootModel(db_service *sql_l.SnippetsService) RootModel{
+func NewRootModel(db_service *sql_l.DatabaseService) RootModel{
 	mode := modeNormal
 	return RootModel{
 		current: ProjectForm,

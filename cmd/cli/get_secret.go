@@ -18,11 +18,13 @@ var getSecretCmd = &cobra.Command{
 	Use: "get-secret",
 	Short: "Get a secret value",
 	Run: func(cmd *cobra.Command, args []string){
-		if db_service == nil{
+		if db_service.CheckInit()!= nil{
 			fmt.Fprintln(os.Stderr,"Database service not initialized")
 			os.Exit(1)
 		}
-		secret := db_service.FindSecretFiltered(secretName,project,env)
+
+		
+		secret := db_service.DatabaseSrv.FindSecretFiltered(secretName,project,env)
 		if (len(secret)>0){
 			fmt.Println(secret[0].Encoded_value)
 		}

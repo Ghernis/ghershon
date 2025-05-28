@@ -34,6 +34,7 @@ type Secret struct {
 	//Created_at time.Time `db:"created_at"`
 	Created_at string `db:"created_at"`
 }
+
 func (p SecretFormInputs) ToSecret() Secret {
     return Secret{
         Name:                p.Name.Value(),

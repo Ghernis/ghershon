@@ -79,7 +79,7 @@ func loadConfigs() Config{
 	return conf
 
 }
-func DoSomething(snippetsSrv *sql_l.SnippetsService){
+func DoSomething(snippetsSrv *sql_l.DatabaseService){
 	log.Println("Something in db with utils")
 	//snippetsSrv.GetData()
 

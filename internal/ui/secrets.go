@@ -23,7 +23,7 @@ type SecretModel struct {
     focusIdx    int
     errMsg      string
 	mode        *Mode
-	db_service  *sql_l.SnippetsService
+	db_service  *sql_l.DatabaseService
 	toast       toast.ToastModel
 }
 
@@ -47,7 +47,7 @@ func (i ProjectItem) Description() string { return i.description }
 func (i ProjectItem) Project_Id() int64 { return i.project_id }
 func (i ProjectItem) FilterValue() string { return i.title }
 
-func NewSecretModel(db_service *sql_l.SnippetsService, mode *Mode ) SecretModel{
+func NewSecretModel(db_service *sql_l.DatabaseService, mode *Mode ) SecretModel{
 	envs := []list.Item{
 		EnvItem{"Default","Default/Global"},
 		EnvItem{"DEV","Desarrollo"},

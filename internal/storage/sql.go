@@ -17,6 +17,10 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+type DatabaseService struct {
+	Db *sqlx.DB
+}
+
 func NewDB(driver, dsn string) (*sqlx.DB, error) {
 	// Create if not exist
 	if _, err := os.Stat(dsn); os.IsNotExist(err) {
@@ -91,12 +95,9 @@ func MustNewDB(driver, dsn string) *sqlx.DB {
     return db
 }
 
-type SnippetsService struct {
-	db *sqlx.DB
-}
 
-func NewSnippetsService(db *sqlx.DB) *SnippetsService {
-	return &SnippetsService{db: db}
+func NewDatabaseService(db *sqlx.DB) *DatabaseService {
+	return &DatabaseService{Db: db}
 }
 
 //func (p ProjectDTO) toDB() Project{//viendo
@@ -144,7 +145,7 @@ type Snippet struct {
 	ProjectID  int64     `db:"project_id"`
 }
 
-func (s *SnippetsService) FindData2(search_string string) []Snippet{
+func (s *DatabaseService) FindData2(search_string string) []Snippet{
 	type search_query struct{
 		Search string
 	}
@@ -157,74 +158,74 @@ func (s *SnippetsService) FindData2(search_string string) []Snippet{
 	t.Execute(query,search_query{search_string})
 	var data []Snippet
 	fmt.Println(query.String())
-	err := s.db.Select(&data,query.String())
+	err := s.Db.Select(&data,query.String())
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
 
-func (s *SnippetsService) FindData(search_string string) []Snippet{
+func (s *DatabaseService) FindData(search_string string) []Snippet{
 	
 	getData := fmt.Sprintf(`
 	select * from snippets where description like '%%%s%%';
 	`,search_string)
 	var data []Snippet
 	fmt.Println(getData)
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
-func (s *SnippetsService) FindSecret(search_id int64) []models.Secret{
+func (s *DatabaseService) FindSecret(search_id int64) []models.Secret{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from secrets where  id == %v;
 	`,search_id)
 	var data []models.Secret
 	fmt.Println(getData)
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
-func (s *SnippetsService) FindSecretFiltered(name string,project_id int64,env string) []models.Secret{
+func (s *DatabaseService) FindSecretFiltered(name string,project_id int64,env string) []models.Secret{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from secrets where  (name == '%v' and project_id == %v and environment == '%v');
 	`,name,project_id,env)
 	var data []models.Secret
 	//fmt.Println(getData)
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
-func (s *SnippetsService) FindAllSecret()[]models.Secret{
+func (s *DatabaseService) FindAllSecret()[]models.Secret{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from secrets;
 	`)
 	var data []models.Secret
 	fmt.Println(getData)
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
 
-func (s *SnippetsService) AddSecret(sec models.Secret) error{
+func (s *DatabaseService) AddSecret(sec models.Secret) error{
 	//fmt.Println(search_string)
 	query := fmt.Sprintf(`
         INSERT INTO secrets (name,project_id,environment, description, secret_type, encoded_value,is_encrypted,created_at)
 		VALUES (:name,:project_id,:environment,:description, :secret_type, :encoded_value,:is_encrypted,:created_at)
 		`)
 
-	_,err := s.db.NamedExec(query,sec)
+	_,err := s.Db.NamedExec(query,sec)
 	
 	if err != nil {
 		log.Fatal("Error in query: ",err)
@@ -232,27 +233,27 @@ func (s *SnippetsService) AddSecret(sec models.Secret) error{
 	return err
 }
 
-func (s *SnippetsService) FindAllProjects()[]models.Project{
+func (s *DatabaseService) FindAllProjects()[]models.Project{
 	//fmt.Println(search_string)
 	getData := fmt.Sprintf(`
 		select * from projects;
 	`)
 	var data []models.Project
 	//fmt.Println(getData)
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}
 	return data
 }
 
-func (s *SnippetsService) AddProject(project models.Project) error{
+func (s *DatabaseService) AddProject(project models.Project) error{
 	query := fmt.Sprintf(`
         INSERT INTO projects (title,id_ticket, description, problem_statement, architecture,evidence,expected_finish_date,completed_at,time_before_automation,time_after_automation,tags)
 		VALUES (:title,:id_ticket, :description, :problem_statement, :architecture,:evidence,:expected_finish_date,:completed_at,:time_before_automation,:time_after_automation,:tags)
 		`)
 
-	_,err := s.db.NamedExec(query,project)
+	_,err := s.Db.NamedExec(query,project)
 	
 	if err != nil {
 		log.Fatal("Error in query: ",err)
@@ -281,12 +282,12 @@ func (s *SnippetsService) AddProject(project models.Project) error{
 //	return data
 //}
 
-func (s *SnippetsService) GetData() ([]Snippet,error){
+func (s *DatabaseService) GetData() ([]Snippet,error){
 	getData := `
 	select * from snippets;   
 	`
 	var data []Snippet
-	err := s.db.Select(&data,getData)
+	err := s.Db.Select(&data,getData)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}

@@ -22,14 +22,14 @@ type ProjectFormModel struct {
     submitting   bool
     errMsg       string
 	mode         *Mode
-	db_service  *sql_l.SnippetsService
+	db_service  *sql_l.DatabaseService
 	toast       toast.ToastModel
 }
 
 func (m ProjectFormModel) Init() tea.Cmd {
     return tea.EnterAltScreen
 }
-func NewProjectFormModel(db_service *sql_l.SnippetsService,mode *Mode) ProjectFormModel{
+func NewProjectFormModel(db_service *sql_l.DatabaseService,mode *Mode) ProjectFormModel{
 	pfi:= models.ProjectFormInputs{
 		Title : textinput.New(),
 		Description : textinput.New(),
