@@ -25,6 +25,7 @@ type SecretModel struct {
 	mode        *Mode
 	db_service  *sql_l.DatabaseService
 	toast       toast.ToastModel
+	key_secret	[]byte
 }
 
 type EnvItem struct{
@@ -47,7 +48,7 @@ func (i ProjectItem) Description() string { return i.description }
 func (i ProjectItem) Project_Id() int64 { return i.project_id }
 func (i ProjectItem) FilterValue() string { return i.title }
 
-func NewSecretModel(db_service *sql_l.DatabaseService, mode *Mode ) SecretModel{
+func NewSecretModel(db_service *sql_l.DatabaseService, mode *Mode, key_secret []byte ) SecretModel{
 	envs := []list.Item{
 		EnvItem{"Default","Default/Global"},
 		EnvItem{"DEV","Desarrollo"},
@@ -103,6 +104,7 @@ func NewSecretModel(db_service *sql_l.DatabaseService, mode *Mode ) SecretModel{
 		submitting: false,
 		db_service: db_service,
 		toast: toast.NewToastModel(),
+		key_secret: key_secret,
 	}
 
 }
@@ -117,7 +119,7 @@ func doSubmitSecretCmd(m SecretModel) tea.Cmd{
 		m.inputs.Environment = selected.Title()
 		selected_project := m.projectList.SelectedItem().(ProjectItem)
 		m.inputs.Project_id = selected_project.Project_Id()
-		err := m.db_service.AddSecret(m.inputs.ToSecret())
+		err := m.db_service.AddSecret(m.inputs.ToSecret(),m.key_secret)
 		if err != nil{
 			return SubmitFinishedMsg{Data: "error", Err:err}
 		}

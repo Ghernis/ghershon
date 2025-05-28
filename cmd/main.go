@@ -58,8 +58,7 @@ func main(){
 	if len(os.Args) >1{
 		cli.Execute(app.store.DatabaseSrv,app.store.KeySecret)
 	} else{
-		//utils.DoSomething(app.SnippetsSrv)
-		p := tea.NewProgram(ui.NewRootModel(app.store.DatabaseSrv))
+		p := tea.NewProgram(ui.NewRootModel(app.store.DatabaseSrv,app.store.KeySecret))
 		if err := p.Start(); err != nil{
 			panic(err)
 		}

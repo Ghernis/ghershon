@@ -10,6 +10,7 @@ import (
 	"strings"
 	//"database/sql"
     "ghershon/internal/models"
+	"ghershon/internal/security"
 	"fmt"
 	"os"
 	"log"
@@ -218,15 +219,19 @@ func (s *DatabaseService) FindAllSecret()[]models.Secret{
 	return data
 }
 
-func (s *DatabaseService) AddSecret(sec models.Secret) error{
-	//fmt.Println(search_string)
+func (s *DatabaseService) AddSecret(sec models.Secret,key_secret []byte) error{
+	val,err := encrypt.EncryptText(sec.Encoded_value,key_secret)
+	if err != nil{
+		fmt.Fprintln(os.Stderr,"Error decrypting value")
+	}
+	sec.Encoded_value = val
+	
 	query := fmt.Sprintf(`
         INSERT INTO secrets (name,project_id,environment, description, secret_type, encoded_value,is_encrypted,created_at)
 		VALUES (:name,:project_id,:environment,:description, :secret_type, :encoded_value,:is_encrypted,:created_at)
 		`)
 
-	_,err := s.Db.NamedExec(query,sec)
-	
+	_,err = s.Db.NamedExec(query,sec)
 	if err != nil {
 		log.Fatal("Error in query: ",err)
 	}

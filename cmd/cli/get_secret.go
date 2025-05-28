@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	//"ghershon/internal/storage"
+	"ghershon/internal/security"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,16 @@ var getSecretCmd = &cobra.Command{
 		
 		secret := db_service.DatabaseSrv.FindSecretFiltered(secretName,project,env)
 		if (len(secret)>0){
-			fmt.Println(secret[0].Encoded_value)
+			//val,err := encrypt.EncryptText(secret[0].Encoded_value,db_service.Key_secret)
+			//if err != nil{
+			//	fmt.Fprintln(os.Stderr,"Error decrypting value")
+			//}
+			//fmt.Println(val)
+			val,err := encrypt.DecryptText(secret[0].Encoded_value,db_service.Key_secret)
+			if err != nil{
+				fmt.Fprintln(os.Stderr,"Error decrypting value")
+			}
+			fmt.Println(val)
 		}
 	},
 }
