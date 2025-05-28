@@ -8,6 +8,7 @@ import(
 	"github.com/go-yaml/yaml"
 	"ghershon/internal/storage"
 	"path/filepath"
+	"encoding/base64"
 )
 type Config struct{
 	Bootstrap struct{
@@ -18,7 +19,7 @@ type Config struct{
 func GetConfigPath(filename string) (string, error) {
 	cfgDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", err
+		return "Error getting user config dir", err
 	}
 	appDir := filepath.Join(cfgDir, "ghershon")
 	if err := os.MkdirAll(appDir, 0755); err != nil {
@@ -30,13 +31,33 @@ func GetConfigPath(filename string) (string, error) {
 func GetDataPath(filename string) (string, error) {
 	dataDir, err := os.UserConfigDir() 
 	if err != nil {
-		return "", err
+		return "Error getting user config dir", err
 	}
 	appDir := filepath.Join(dataDir,"ghershon") 
 	if err := os.MkdirAll(appDir, 0755); err != nil {
 		return "", err
 	}
 	return filepath.Join(appDir, filename), nil
+}
+
+func LoadKey(filename string) ([]byte, error) {
+	dataDir, err := os.UserConfigDir() 
+	if err != nil {
+		return nil, err
+	}
+	keyDir := filepath.Join(dataDir,"ghershon",filename) 
+    encoded, err := os.ReadFile(keyDir)
+    if err != nil {
+        return nil, err
+    }
+    key, err := base64.StdEncoding.DecodeString(string(encoded))
+    if err != nil {
+        return nil, err
+    }
+    if len(key) != 32 {
+        return nil, fmt.Errorf("key must be 32 bytes")
+    }
+    return key, nil
 }
 
 func loadConfigs() Config{

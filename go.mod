@@ -8,7 +8,6 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.9.1
 	modernc.org/sqlite v1.37.0
 )

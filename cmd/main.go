@@ -8,7 +8,7 @@ import(
 	"ghershon/cmd/cli"
 	"ghershon/internal/ui"
 	"ghershon/internal/storage"
-	//"ghershon/internal/projects"
+	"ghershon/internal/security"
 	"ghershon/pkg/utils"
 
 	"github.com/charmbracelet/bubbletea"
@@ -38,8 +38,11 @@ func newApp() *App{
 	}
 }
 func main(){
-	//config:=utils.Load()
-	//fmt.Println(config.Bootstrap.Dir_path)
+
+	_,err:=encrypt.EnsureEncryptionKey()
+	if err != nil{
+		log.Fatal(err)
+	}
 
 	app := newApp()
 	defer app.db.Close()
