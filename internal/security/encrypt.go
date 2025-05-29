@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
     "io"
+	"runtime"
 )
 
 const (
@@ -17,6 +18,10 @@ const (
     keyFileName   = "enck"
     keySize       = 32 // 256-bit AES key
 )
+
+func isWindows() bool {
+    return runtime.GOOS == "windows"
+}
 
 func EnsureEncryptionKey() (string, error) {
     configDir, err := os.UserConfigDir()
@@ -46,15 +51,18 @@ func EnsureEncryptionKey() (string, error) {
         }
     }
 
-    // Check permissions
-    info, err := os.Stat(keyPath)
-    if err != nil {
-        return "", fmt.Errorf("failed to stat key file: %w", err)
-    }
 
-    if info.Mode().Perm() != 0600 {
-        return "", errors.New("key file has incorrect permissions; expected 0600")
-    }
+    // Check permissions
+	if !isWindows(){
+		info, err := os.Stat(keyPath)
+		if err != nil {
+			return "", fmt.Errorf("failed to stat key file: %w", err)
+		}
+
+		if info.Mode().Perm() != 0600 {
+			return "", errors.New("key file has incorrect permissions; expected 0600")
+		}
+	}
 
     return keyFileName, nil
 }

@@ -1,5 +1,5 @@
 # Variables
-BINARY_NAME=ghershon
+BINARY_NAME=gher
 CMD_PATH=./cmd/
 
 # Detect OS for correct binary name
@@ -10,17 +10,17 @@ ifeq ($(OS), Linux)
         EXT :=.exe
         endif
 build:
-	go build -o ghershon ./cmd/
+	go build -o $(BINARY_NAME) ./cmd/
 
 build-win:
 		GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME).exe $(CMD_PATH)
 rp:
-	cp ghershon ~/bin
-	chmod 744 ~/bin/ghershon
+	cp $(BINARY_NAME) ~/bin
+	chmod 744 ~/bin/$(BINARY_NAME)
 
 run:
-	./ghershon
+	./$(BINARY_NAME)
 r:
 	go run ./cmd/main.go
 clean:
-	rm -f ghershon
+	rm -f $(BINARY_NAME)

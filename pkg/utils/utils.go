@@ -61,7 +61,7 @@ func LoadKey(filename string) ([]byte, error) {
 }
 
 func loadConfigs() Config{
-	path := "./config.yml"
+	//path := "./config.yml"
 	path,err := GetConfigPath("config.yml")
 	if err != nil{
 		fmt.Errorf("Error finding config file %w",err)

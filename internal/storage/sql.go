@@ -7,6 +7,7 @@ import (
 	"time"
 	//"strconv"
 	"bytes"
+	_ "embed"
 	"strings"
 	//"database/sql"
     "ghershon/internal/models"
@@ -18,9 +19,13 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+//go:embed tables.sql
+var schemaSQL string
+
 type DatabaseService struct {
 	Db *sqlx.DB
 }
+
 
 func NewDB(driver, dsn string) (*sqlx.DB, error) {
 	// Create if not exist
@@ -40,35 +45,44 @@ func NewDB(driver, dsn string) (*sqlx.DB, error) {
 	// Initialize
 	err = initializeSchema(db)
 	if err != nil {
-		log.Fatalf("Failed to initialize schema: %v", err)
+		log.Fatalf("Failed to initialize schema in NewDB: %v", err)
 	}
-
-	//log.Println("Database initialized successfully.")
     return db, nil
 }
 func initializeSchema(db *sqlx.DB) error{
-	path := "internal/storage/tables.sql"
-	schema, err := os.ReadFile(path)
-	if err != nil{
-		fmt.Errorf("Reading db file %w",err)
-	}
-	statements := strings.Split(string(schema),";")
-	for	 _, stmt := range statements {
+	//path := "internal/storage/tables.sql"
+	statements := strings.Split(schemaSQL, ";")
+	for _,stmt := range statements{
 		stmt = strings.TrimSpace(stmt)
-		if stmt == "" {
+		if stmt==""{
 			continue
 		}
-		_,err = db.Exec(stmt)
+		_,err := db.Exec(stmt)
 		if err != nil{
-			fmt.Errorf("Error in statement: %w",err)
+			return fmt.Errorf("Error in SQL statement: %w",err)
 		}
-	}	
-
-	err = seedProjectsTable(db)
-	if err != nil{
-		fmt.Errorf("Seeding projects %w",err)
 	}
-	return err
+	
+//	schema, err := os.ReadFile(path)
+//	if err != nil{
+//		fmt.Errorf("Reading db file %w",err)
+//	}
+//	statements := strings.Split(string(schema),";")
+//	for	 _, stmt := range statements {
+//		stmt = strings.TrimSpace(stmt)
+//		if stmt == "" {
+//			continue
+//		}
+//		_,err = db.Exec(stmt)
+//		if err != nil{
+//			fmt.Errorf("Error in statement: %w",err)
+//		}
+//	}	
+
+	if err := seedProjectsTable(db); err !=nil{
+		return fmt.Errorf("Seeding projects %w",err)
+	}
+	return nil
 }
 
 func seedProjectsTable(db *sqlx.DB) error {

@@ -2,6 +2,7 @@
 *.sum
 *.exe
 ghershon
+gher
 mydata.db
 ghershon.db
 ghershon.bak
